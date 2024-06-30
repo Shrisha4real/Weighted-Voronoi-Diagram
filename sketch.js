@@ -2,7 +2,7 @@ let points = []
 let delaunay , voronoi
 
 function setup() {
-  createCanvas(300, 600);
+  createCanvas(1200, 600);
   for(let i = 0 ; i<10000 ; i++)
     {
       points[i] = createVector(random(width) , random(height));
@@ -15,6 +15,7 @@ function setup() {
 
 function draw() {
   background(255);
+
   for(let v of points)
     {
       stroke(0);
@@ -41,16 +42,30 @@ function draw() {
       
       let centroids = []
       for(let poly of cells){
-        let centroid = createVector(0,0)
-        for (const vertex of poly) {
-            centroid.x += vertex[0]; // Add x-coordinate of vertex
-            centroid.y += vertex[1]; // Add y-coordinate of vertex
-        }
-        centroid.div(poly.length) // Average y-coordinates for centroid
-        // stroke(255, 0, 0); // Set stroke color to red this basically sets the property not applies it throughout the code/figure
-        // strokeWeight(4); // Adjust stroke weight for better visibility
-        // point(centroid.x, centroid.y);
+        let area = 0;
+        let centroid = createVector(0,0);
+        for(i = 0 ; i< poly.length ; i++)
+          {
+            let v0 = poly[i] ;
+            let v1 = poly[(i +1)% poly.length];
+            let crossValue = v0[0]*v1[1] - v0[1]*v1[0] ;
+            area+= crossValue;
+            centroid.x += (v0[0]+v1[0])*crossValue;
+            centroid.y += (v0[1]+v1[1])*crossValue;
+          }
+        area /=2;
+        centroid.div(6*area);
         centroids.push(centroid)
+        // let centroid = createVector(0,0)
+        // for (const vertex of poly) {
+        //     centroid.x += vertex[0]; // Add x-coordinate of vertex
+        //     centroid.y += vertex[1]; // Add y-coordinate of vertex
+        // }
+        // centroid.div(poly.length) // Average y-coordinates for centroid
+        // // stroke(255, 0, 0); // Set stroke color to red this basically sets the property not applies it throughout the code/figure
+        // // strokeWeight(4); // Adjust stroke weight for better visibility
+        // // point(centroid.x, centroid.y);
+        // centroids.push(centroid)
     }
           //stroke(0); // Set stroke color back to black
           //strokeWeight(1);
