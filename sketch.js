@@ -8,7 +8,7 @@ function preload()
 function setup() {
   createCanvas(400, 600);
   pic.resize(400,600)
-  for(let i = 0 ; i<200000 ; i++)
+  for(let i = 0 ; i<400000 ; i++)
     {
       let x = random(width) ;
       let y = random(height);
@@ -23,16 +23,18 @@ function setup() {
 
     delaunay = calculateDelaunay(points)
     voronoi  = delaunay.voronoi ([0,0,width, height]);
-    // noLoop()
+
 }
 
 function draw() {
   background(255);
 
+  
+
   for(let v of points)
     {
       stroke(0);
-      strokeWeight(.8);
+      strokeWeight(.65);
       point(v.x , v.y);
     }
     
@@ -53,33 +55,39 @@ function draw() {
       //     endShape();
       //   }
       
-      let centroids = []
-      for(let poly of cells){
-        let area = 0;
-        let centroid = createVector(0,0);
-        for(i = 0 ; i< poly.length ; i++)
-          {
-            let v0 = poly[i] ;
-            let v1 = poly[(i +1)% poly.length];
-            let crossValue = v0[0]*v1[1] - v0[1]*v1[0] ;
-            area+= crossValue;
-            centroid.x += (v0[0]+v1[0])*crossValue;
-            centroid.y += (v0[1]+v1[1])*crossValue;
-          }
-        area /=2;
-        centroid.div(6*area);
-        centroids.push(centroid)
-        // let centroid = createVector(0,0)
-        // for (const vertex of poly) {
-        //     centroid.x += vertex[0]; // Add x-coordinate of vertex
-        //     centroid.y += vertex[1]; // Add y-coordinate of vertex
-        // }
-        // centroid.div(poly.length) // Average y-coordinates for centroid
-        // // stroke(255, 0, 0); // Set stroke color to red this basically sets the property not applies it throughout the code/figure
-        // // strokeWeight(4); // Adjust stroke weight for better visibility
-        // // point(centroid.x, centroid.y);
-        // centroids.push(centroid)
-    }
+      let centroids = new Array(cells.length)
+      let weights = new Array(cells.length)
+      for (let i = 0 ; i<cells.length;  i++){
+        centroids[i] = createVector(0,0);
+        weights[i] = 0;
+      }
+      for (let i = 0 ; i<width;  i++){
+        for (let j = 0 ; j<height;  j++){
+          let index = i+j+ width;
+          let r = pic.pixels[index+0]
+          let g  = pic.pixels[index+1]
+          let b  = pic.pixels[index+2]
+          let a  =pic.pixels[index+3]
+          let bright =( r+g+b)/3
+          let weight = 1/(1+abs(bright-127))
+          delaunayIndex = delaunay.find(i, j, delaunayIndex);
+          centroids[delaunayIndex].x += i * weight;
+          centroids[delaunayIndex].y += j * weight;
+          weights[delaunayIndex] += weight;
+          } 
+
+
+        }
+      for (let i = 0; i < centroids.length; i++) {
+        if (weights[i] > 0) {
+          centroids[i].div(weights[i]);
+        } else {
+          centroids[i] = points[i].copy();
+        }
+      }
+        
+      }
+
           //stroke(0); // Set stroke color back to black
           //strokeWeight(1);
         
@@ -92,7 +100,7 @@ function draw() {
     // console.log(triangles);
     // console.log(triangles.length);
     
-    }
+    
 
 
 
